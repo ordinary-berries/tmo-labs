@@ -16,7 +16,7 @@ import me.ordinary_berries.tmo.util.math.MINUTES_IN_A_DAY
 import me.ordinary_berries.tmo.util.math.MINUTES_IN_A_DAY_D
 import me.ordinary_berries.tmo.util.math.MINUTES_IN_HOUR
 import me.ordinary_berries.tmo.util.SystemRunner
-import me.ordinary_berries.tmo.util.math.TIME_IN_QUEUE_METRIC
+import me.ordinary_berries.tmo.util.math.TIME_IN_SYSTEM_METRIC
 import me.ordinary_berries.tmo.util.math.allChannelsFreeProbability
 import me.ordinary_berries.tmo.util.math.eventWillWaitInAQueueProbability
 import me.ordinary_berries.tmo.util.plot.dayTimeRangeMinutes
@@ -100,7 +100,7 @@ private fun waitTimeToNCase() {
 
         val metrics = system.metricStorage.getAllMetrics()
         timeWaitAvg.add(
-            metrics.getDynamic(TIME_IN_QUEUE_METRIC, "SimpleEvent").average()
+            metrics.getDynamic(TIME_IN_SYSTEM_METRIC, "SimpleEvent").average()
         )
         queueSizeAvg.add(
             metrics.getDynamic(EVENT_PERSIST_METRIC, "QueuePersistence").average()
@@ -109,7 +109,7 @@ private fun waitTimeToNCase() {
 
     plot {
         layout {
-            title = "Metric: $TIME_IN_QUEUE_METRIC"
+            title = "Metric: $TIME_IN_SYSTEM_METRIC"
             xAxisLabel = "n, pts"
             yAxisLabel = "time (min)"
         }
@@ -224,7 +224,7 @@ private data class L2Table(
         n: Int,
         metrics: Map<String, Counter>,
     ) {
-        val avgTimeInQueue = metrics.getDynamic(TIME_IN_QUEUE_METRIC, "SimpleEvent").average()
+        val avgTimeInQueue = metrics.getDynamic(TIME_IN_SYSTEM_METRIC, "SimpleEvent").average()
         val doneAmount = metrics.getDynamic(DONE_EVENT_METRIC, "WorkerNode").sum()
         val avgQueueSize = metrics.getDynamic(EVENT_PERSIST_METRIC, "QueuePersistence").average()
         val downtimeProb = metrics.getDynamic(ALL_CHANNELS_ARE_FREE_METRIC, "GroupNode").count { it != 0 } / MINUTES_IN_A_DAY_D

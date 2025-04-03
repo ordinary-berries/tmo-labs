@@ -7,5 +7,7 @@ interface Event : Identifiable {
 
     fun markDone()
 
+    fun drop()
+
     fun getCreatedAt(): Int
 }

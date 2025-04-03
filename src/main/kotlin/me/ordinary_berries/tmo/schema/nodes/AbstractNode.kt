@@ -39,6 +39,10 @@ abstract class AbstractNode(
         enqueued = queuePersistenceStrategy.delegate(enqueued)
     }
 
+    override fun close() {
+        enqueued.forEach { it.drop() }
+    }
+
     override fun getEnqueuedEvents(): List<Event> = enqueued
     protected fun getOneEnqueuedEvent(): Event? = if (enqueued.isNotEmpty()) enqueued.removeFirst() else null
 

@@ -37,4 +37,20 @@ object SystemRunner {
     fun process(head: Node) {
         run(listOf(), head)
     }
+
+    private fun finalize(head: Node) {
+        var current: Node? = head
+
+        while (current != null) {
+            current.close()
+            current.getNestedNodes().forEach { nestedNode ->
+                nestedNode.also {
+                    it.close()
+                    finalize(it)
+                }
+            }
+
+            current = current.getNext()
+        }
+    }
 }

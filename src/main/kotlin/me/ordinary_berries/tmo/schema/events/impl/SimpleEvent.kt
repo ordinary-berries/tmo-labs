@@ -3,7 +3,7 @@ package me.ordinary_berries.tmo.schema.events.impl
 import me.ordinary_berries.tmo.metric.MetricStorage
 import me.ordinary_berries.tmo.schema.events.Event
 import me.ordinary_berries.tmo.schema.tick.TickSupplier
-import me.ordinary_berries.tmo.util.math.TIME_IN_QUEUE_METRIC
+import me.ordinary_berries.tmo.util.math.TIME_IN_SYSTEM_METRIC
 
 class SimpleEvent(
     private val tickSupplier: TickSupplier,
@@ -17,7 +17,11 @@ class SimpleEvent(
     }
 
     override fun markDone() {
-        metricStorage.getCounter(TIME_IN_QUEUE_METRIC).incrementBy(this, tickSupplier.getTicked() - getCreatedAt())
+        metricStorage.getCounter(TIME_IN_SYSTEM_METRIC).incrementBy(this, tickSupplier.getTicked() - getCreatedAt())
+    }
+
+    override fun drop() {
+        metricStorage.getCounter(TIME_IN_SYSTEM_METRIC).incrementBy(this, tickSupplier.getTicked() - getCreatedAt())
     }
 
     override fun getCreatedAt(): Int {

@@ -2,6 +2,7 @@ package me.ordinary_berries.tmo.build
 
 import me.ordinary_berries.tmo.common.Builder
 import me.ordinary_berries.tmo.schema.queue.impl.DropAllQueueStrategy
+import me.ordinary_berries.tmo.schema.queue.impl.DropQueueOnFixedSizeStrategy
 import me.ordinary_berries.tmo.schema.queue.impl.PersistAllQueueStrategy
 
 class QueuePersistenceStrategyBuilder(
@@ -13,6 +14,10 @@ class QueuePersistenceStrategyBuilder(
 
     fun persistAllQueueStrategy(init: PersistAllQueueStrategyBuilder.() -> Unit = {}): PersistAllQueueStrategy {
         return PersistAllQueueStrategyBuilder(context).apply(init).build()
+    }
+
+    fun dropQueueOnFixedSizeStrategy(init: DropQueueOnFixedSizeStrategyBuilder.() -> Unit = {}): DropQueueOnFixedSizeStrategy {
+        return DropQueueOnFixedSizeStrategyBuilder(context).apply(init).build()
     }
 }
 
@@ -34,4 +39,19 @@ class PersistAllQueueStrategyBuilder(
     )
 
     override fun getContext(): BuilderContext = context
+}
+
+class DropQueueOnFixedSizeStrategyBuilder(
+    private val context: BuilderContext,
+) : Builder<DropQueueOnFixedSizeStrategy> {
+    var maximumQueueSize = 0
+
+    override fun build(): DropQueueOnFixedSizeStrategy = DropQueueOnFixedSizeStrategy(
+        context.metricStorage,
+        maximumQueueSize,
+    )
+
+    override fun getContext(): BuilderContext {
+        return context
+    }
 }

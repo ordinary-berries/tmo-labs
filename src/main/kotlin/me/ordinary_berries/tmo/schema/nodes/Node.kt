@@ -20,4 +20,6 @@ interface Node : CanWork, Identifiable {
     fun getNestedNodesAmount(): Int
 
     fun getNestedNodes(): List<Node>
+
+    fun close()
 }
