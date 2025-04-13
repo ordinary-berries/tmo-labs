@@ -8,6 +8,11 @@ fun alpha(lambda: Int, mu: Int): Double {
     return eventsInMinute / (1 / timeToConsume)
 }
 
+fun alpha(lambda: Int, mu: Double): Double {
+    val eventsInMinute = lambda / MINUTES_IN_HOUR_D
+    return eventsInMinute / (1 / mu)
+}
+
 fun allChannelsFreeProbability(lambda: Int, mu: Int, n: Int): Double {
     val alpha = alpha(lambda, mu)
 
@@ -58,4 +63,14 @@ fun averageAmountOfEventsInQueueWithLimit(lambda: Int, mu: Int, n: Int, m: Int):
             (0..(m - 1)).sumOf { a -> (a + 1) * (alpha / n).pow(a) } *
             allChannelsFreeProbabilityWithLimit(lambda, mu, n, m)
     }
+}
+
+fun averageWaitTimeInQueueWithPriorities(priority: Int, lambdas: List<Int>, mu: Int): Double {
+    val alphas = lambdas.map { alpha(it, mu) }
+
+    return alphas[priority - 1] / (mu * alphas.reduce { a, b -> (1.0 - b) * a })
+}
+
+fun averageAmountOfQueueWithPriorities(priority: Int, lambdas: List<Int>, mu: Int): Double {
+    return lambdas[priority - 1] * averageWaitTimeInQueueWithPriorities(priority, lambdas, mu)
 }

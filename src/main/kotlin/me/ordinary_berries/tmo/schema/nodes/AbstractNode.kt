@@ -40,15 +40,32 @@ abstract class AbstractNode(
     }
 
     override fun close() {
-        enqueued.forEach { it.drop() }
+        getEnqueuedEvents().forEach { it.drop() }
     }
 
     override fun getEnqueuedEvents(): List<Event> = enqueued
-    protected fun getOneEnqueuedEvent(): Event? = if (enqueued.isNotEmpty()) enqueued.removeFirst() else null
+
+    protected fun getOneEnqueuedEvent(): Event? {
+        val events = getEnqueuedEvents()
+        var mostPrioritized: Event? = null
+
+        events.map { event ->
+            if (mostPrioritized == null || event.getPriority() < mostPrioritized.getPriority()) {
+                mostPrioritized = event
+            }
+        }
+        mostPrioritized?.let { popEvent(it) }
+
+        return mostPrioritized
+    }
 
     override fun getName(): String = nodeName ?: hashCode().toString()
     override fun getGroupName(): String = this.javaClass.simpleName
 
     override fun getNestedNodes(): List<Node> = listOf()
     override fun getNestedNodesAmount(): Int = 0
+
+    private fun popEvent(event: Event) {
+        enqueued.remove(event)
+    }
 }

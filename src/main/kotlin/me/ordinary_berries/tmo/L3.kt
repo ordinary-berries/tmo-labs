@@ -11,13 +11,13 @@ import me.ordinary_berries.tmo.schema.tick.impl.TickerImpl
 import me.ordinary_berries.tmo.util.SystemRunner
 import me.ordinary_berries.tmo.util.math.DONE_EVENT_METRIC
 import me.ordinary_berries.tmo.util.math.DROP_EVENT_METRIC
-import me.ordinary_berries.tmo.util.math.EVENT_PERSIST_METRIC
 import me.ordinary_berries.tmo.util.math.MINUTES_IN_A_DAY
 import me.ordinary_berries.tmo.util.math.MINUTES_IN_A_DAY_D
 import me.ordinary_berries.tmo.util.math.MINUTES_IN_HOUR_D
 import me.ordinary_berries.tmo.util.math.TIME_IN_SYSTEM_METRIC
 import me.ordinary_berries.tmo.util.math.averageAmountOfEventsInQueueWithLimit
 import me.ordinary_berries.tmo.util.math.dropProbabilityWithLimit
+import me.ordinary_berries.tmo.util.math.getPrioritizedEventPersistMetricName
 import me.ordinary_berries.tmo.util.plot.dayTimeRangeMinutes
 import me.ordinary_berries.tmo.util.plot.docsDir
 import me.ordinary_berries.tmo.util.plot.getDynamic
@@ -67,13 +67,13 @@ private fun fixedVarsCase() {
     plot {
         line {
             layout {
-                title = "Metric: $EVENT_PERSIST_METRIC"
+                title = "Metric: ${getPrioritizedEventPersistMetricName(1)}"
                 xAxisLabel = "minute"
                 yAxisLabel = "amount of events persisted (pts)"
             }
 
             x(dayTimeRangeMinutes())
-            y(metrics.getDynamic(EVENT_PERSIST_METRIC, "QueuePersistence"))
+            y(metrics.getDynamic(getPrioritizedEventPersistMetricName(1), "QueuePersistence"))
         }
     }.save("fixedVarsCase.l:$lambda;mu:$mu;m:$m;persisted.png", scale = 1.5, dpi = 300, path = docsDir())
 
@@ -234,7 +234,7 @@ private data class L3Table(
 
         val dropProb = metrics.getDynamic(DROP_EVENT_METRIC, "QueuePersistence").sum() / doneAmount.toDouble()
         val theoreticalDropProb = dropProbabilityWithLimit(lambda, mu, 1, m)
-        val avgEventsInQueue = metrics.getDynamic(EVENT_PERSIST_METRIC, "QueuePersistence").average()
+        val avgEventsInQueue = metrics.getDynamic(getPrioritizedEventPersistMetricName(1), "QueuePersistence").average()
         val theoreticalAvgEventsInQueue = averageAmountOfEventsInQueueWithLimit(lambda, mu, 1, m)
         val avgWaitInQueue = metrics.getDynamic(TIME_IN_SYSTEM_METRIC, "SimpleEvent").average()
         val loadCf = (doneAmount * (MINUTES_IN_HOUR_D / mu)) / MINUTES_IN_A_DAY_D

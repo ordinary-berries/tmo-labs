@@ -10,4 +10,6 @@ interface Event : Identifiable {
     fun drop()
 
     fun getCreatedAt(): Int
+
+    fun getPriority(): Int
 }

@@ -4,7 +4,7 @@ import me.ordinary_berries.tmo.metric.MetricStorage
 import me.ordinary_berries.tmo.schema.events.Event
 import me.ordinary_berries.tmo.schema.queue.AbstractQueuePersistenceStrategy
 import me.ordinary_berries.tmo.util.math.DROP_EVENT_METRIC
-import me.ordinary_berries.tmo.util.math.EVENT_PERSIST_METRIC
+import me.ordinary_berries.tmo.util.math.getPrioritizedEventPersistMetricName
 
 class DropQueueOnFixedSizeStrategy(
     private val metricStorage: MetricStorage,
@@ -18,7 +18,9 @@ class DropQueueOnFixedSizeStrategy(
         } else {
             queue
         }
-        metricStorage.getCounter(EVENT_PERSIST_METRIC).incrementBy(this, newQueue.size)
+        newQueue.map { event ->
+            metricStorage.getCounter(getPrioritizedEventPersistMetricName(event.getPriority())).increment(this)
+        }
 
         return newQueue
     }

@@ -3,12 +3,13 @@ package me.ordinary_berries.tmo.schema.events.impl
 import me.ordinary_berries.tmo.metric.MetricStorage
 import me.ordinary_berries.tmo.schema.events.Event
 import me.ordinary_berries.tmo.schema.tick.TickSupplier
-import me.ordinary_berries.tmo.util.math.TIME_IN_SYSTEM_METRIC
+import me.ordinary_berries.tmo.util.math.getPrioritizedTimeInSystemMetricName
 
-class SimpleEvent(
+class PrioritizedEvent(
     private val tickSupplier: TickSupplier,
     private val metricStorage: MetricStorage,
-    private val ticksToConsume: Double
+    private val ticksToConsume: Double,
+    private val priority: Int
 ) : Event {
     private val createdAt = tickSupplier.getTicked()
 
@@ -17,11 +18,11 @@ class SimpleEvent(
     }
 
     override fun markDone() {
-        metricStorage.getCounter(TIME_IN_SYSTEM_METRIC).incrementBy(this, tickSupplier.getTicked() - getCreatedAt())
+        metricStorage.getCounter(createMetricName()).incrementBy(this, tickSupplier.getTicked() - getCreatedAt())
     }
 
     override fun drop() {
-        metricStorage.getCounter(TIME_IN_SYSTEM_METRIC).incrementBy(this, tickSupplier.getTicked() - getCreatedAt())
+        metricStorage.getCounter(createMetricName()).incrementBy(this, tickSupplier.getTicked() - getCreatedAt())
     }
 
     override fun getCreatedAt(): Int {
@@ -36,5 +37,9 @@ class SimpleEvent(
         return hashCode().toString()
     }
 
-    override fun getPriority(): Int = 1
+    override fun getPriority(): Int = priority
+
+    private fun createMetricName(): String {
+        return getPrioritizedTimeInSystemMetricName(getPriority())
+    }
 }
