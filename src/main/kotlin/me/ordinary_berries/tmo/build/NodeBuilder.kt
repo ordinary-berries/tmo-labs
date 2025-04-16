@@ -3,6 +3,9 @@ package me.ordinary_berries.tmo.build
 import me.ordinary_berries.tmo.common.Builder
 import me.ordinary_berries.tmo.metric.MetricStorage
 import me.ordinary_berries.tmo.schema.nodes.Node
+import me.ordinary_berries.tmo.schema.nodes.NodeConstructor
+import me.ordinary_berries.tmo.schema.nodes.NodeSupplier
+import me.ordinary_berries.tmo.schema.nodes.impl.DynamicGroupNode
 import me.ordinary_berries.tmo.schema.nodes.impl.GroupNode
 import me.ordinary_berries.tmo.schema.nodes.impl.PushEventsNode
 import me.ordinary_berries.tmo.schema.nodes.impl.WorkerNode
@@ -16,6 +19,19 @@ class NodeBuilder(
 ) {
     fun groupNode(subNodes: List<ConcreteNodeBuilder<*>>, init: GroupNodeBuilder.() -> Unit = {}): GroupNodeBuilder {
         return GroupNodeBuilder(context, QueuePersistenceStrategyBuilder(context), subNodes.toMutableList()).apply(init)
+    }
+
+    fun dynamicGroupNode(
+        nodeConstructor: NodeConstructor,
+        nodeSupplier: NodeSupplier,
+        init: DynamicGroupNodeBuilder.() -> Unit = {}
+    ): DynamicGroupNodeBuilder {
+        return DynamicGroupNodeBuilder(
+            context,
+            QueuePersistenceStrategyBuilder(context),
+            nodeConstructor,
+            nodeSupplier
+        ).apply(init)
     }
 
     fun pushEventsNode(nextNode: ConcreteNodeBuilder<*>, init: PushEventsNodeBuilder.() -> Unit = {}): PushEventsNodeBuilder {
@@ -96,6 +112,37 @@ class WorkerNodeBuilder(
             previous = previousNode?.build(),
             tickSupplier = tickSupplier,
             name = name,
+        )
+
+    override fun getContext(): BuilderContext {
+        return context
+    }
+}
+
+class DynamicGroupNodeBuilder(
+    private val context: BuilderContext,
+    private val queuePersistenceStrategyBuilder: QueuePersistenceStrategyBuilder,
+    private val nodeConstructor: NodeConstructor,
+    private val nodeSupplier: NodeSupplier,
+) : ConcreteNodeBuilder<DynamicGroupNode> {
+    var minSize: Int = 1
+    var maxSize: Int = 5
+    var shrinkDensity = 0.5
+    var queuePersistenceStrategy: QueuePersistenceStrategy = queuePersistenceStrategyBuilder.dropAllQueueStrategy()
+    var nextNode: Node? = null
+    var previousNode: Node? = null
+
+    override fun build(): DynamicGroupNode =
+        DynamicGroupNode(
+            minSize,
+            maxSize,
+            shrinkDensity,
+            nodeConstructor,
+            nodeSupplier,
+            queuePersistenceStrategy,
+            context.metricStorage,
+            nextNode,
+            previousNode,
         )
 
     override fun getContext(): BuilderContext {

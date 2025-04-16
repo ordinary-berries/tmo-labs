@@ -34,7 +34,8 @@ class GroupNode(
         while (!isLocked() && enqueued.isNotEmpty()) {
             val node = roundRobinIterator.next()
             if (!node.isLocked()) {
-                node.consumeEvent(enqueued.removeFirst())
+                val event = requireNotNull(getOneEnqueuedEvent())
+                node.consumeEvent(event)
             }
         }
     }
